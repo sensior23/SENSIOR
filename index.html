@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SENSIOR · rainbow prompt studio</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Font: Inter (clean) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: background 0.3s;
+    }
+
+    /* theme variables */
+    body.light {
+      --bg-color: #f0f2f5;
+      --glass-bg: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --text-primary: #1e2433;
+      --text-secondary: #3d4459;
+      --icon-color: #5f6b8a;
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --card-border: rgba(255, 255, 255, 0.9);
+      --hover-bg: rgba(255, 255, 255, 0.95);
+      --shadow: 0 15px 30px -12px rgba(0, 0, 0, 0.2);
+      --modal-bg: rgba(255, 255, 255, 0.85);
+      --input-bg: rgba(255, 255, 255, 0.6);
+    }
+
+    body.dark {
+      --bg-color: #000000;          /* pure black background */
+      --glass-bg: rgba(20, 20, 30, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --text-primary: #f0eaff;
+      --text-secondary: #cbd0e0;
+      --icon-color: #a6b1d0;
+      --card-bg: rgba(25, 25, 40, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --hover-bg: rgba(50, 50, 70, 0.8);
+      --shadow: 0 15px 30px -12px rgba(0, 0, 0, 0.8);
+      --modal-bg: rgba(20, 20, 35, 0.95);
+      --input-bg: rgba(40, 40, 60, 0.7);
+    }
+
+    body {
+      background: var(--bg-color);
+    }
+
+    /* main glass container — extra round */
+    .sensior-app {
+      width: 1440px;
+      max-width: 100%;
+      height: 880px;
+      max-height: 95vh;
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      border-radius: 60px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5);
+      display: flex;
+      overflow: hidden;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    /* ---------- SIDEBAR — rainbow accents ---------- */
+    .sidebar {
+      width: 300px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.3s ease, padding 0.2s, opacity 0.2s, background 0.3s;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #a0a8c0 transparent;
+    }
+
+    .sidebar.collapsed {
+      width: 0;
+      padding: 0;
+      opacity: 0;
+      pointer-events: none;
+      border-right: none;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      padding: 0 6px;
+    }
+    .sidebar-header h3 {
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ff6b6b, #ffb347, #ffee88, #6bff6b, #6bb5ff, #b56bff, #ff6b9d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .close-sidebar {
+      background: transparent;
+      border: none;
+      color: var(--icon-color);
+      font-size: 22px;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 40px;
+      transition: 0.2s;
+    }
+    .close-sidebar:hover {
+      background: var(--hover-bg);
+      color: var(--text-primary);
+    }
+
+    /* rainbow nav items */
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 20px;
+      border-radius: 30px;
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 16px;
+      transition: all 0.2s;
+      cursor: pointer;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+    }
+    .nav-item i {
+      width: 24px;
+      font-size: 1.25rem;
+      background: linear-gradient(45deg, #ff6b6b, #ffb347, #ffee88, #6bff6b, #6bb5ff, #b56bff, #ff6b9d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-item:hover {
+      background: var(--hover-bg);
+      border-color: var(--glass-border);
+      transform: translateX(6px);
+      box-shadow: 0 8px 16px -10px rgba(0, 0, 0, 0.2);
+    }
+
+    .upload-section {
+      margin-top: 28px;
+      border-top: 1px solid var(--glass-border);
+      padding-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .action-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      padding: 16px 20px;
+      color: var(--text-primary);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      transition: 0.2s;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+    .action-btn i {
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, #ff6b6b, #ffb347, #ffee88, #6bff6b, #6bb5ff, #b56bff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .action-btn:hover {
+      background: var(--hover-bg);
+      transform: scale(1.02);
+      border-color: rgba(255,255,255,0.9);
+    }
+
+    .dynamic-list {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .dynamic-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      border-radius: 40px;
+      color: var(--text-secondary);
+      font-size: 15px;
+      transition: 0.15s;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .dynamic-item i {
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #a1c4fd, #c2e9fb, #fbc2eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .dynamic-item:hover {
+      background: var(--hover-bg);
+      border-color: var(--glass-border);
+      padding-left: 26px;
+      color: var(--text-primary);
+    }
+
+    /* ---------- MAIN PANEL ---------- */
+    .main-panel {
+      flex: 1;
+      padding: 32px 40px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .logo-img {
+      height: 44px;
+      width: auto;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1));
+    }
+    .right-controls {
+      display: flex;
+      gap: 16px;
+    }
+    .toggle-sidebar, .dark-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      width: 60px;
+      height: 60px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 26px;
+      cursor: pointer;
+      transition: 0.2s;
+      backdrop-filter: blur(10px);
+    }
+    .toggle-sidebar:hover, .dark-toggle:hover {
+      background: var(--hover-bg);
+    }
+
+    .view-title {
+      font-size: 26px;
+      font-weight: 350;
+      color: var(--text-primary);
+      margin-bottom: 26px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .view-title i {
+      color: var(--icon-color);
+      background: var(--card-bg);
+      padding: 12px;
+      border-radius: 50%;
+    }
+
+    .prompt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 28px;
+    }
+
+    /* premium card — rainbow borders on hover */
+    .prompt-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      padding: 22px 18px 20px;
+      transition: 0.25s ease;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .prompt-card:hover {
+      transform: translateY(-6px);
+      border: 2px solid transparent;
+      background: var(--hover-bg);
+      box-shadow: 0 25px 35px -14px rgba(0, 0, 0, 0.25);
+    }
+    .prompt-card:hover::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px; bottom: -2px;
+      background: linear-gradient(45deg, #ff6b6b, #ffb347, #ffee88, #6bff6b, #6bb5ff, #b56bff, #ff6b9d);
+      border-radius: 42px;
+      z-index: -1;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      background: linear-gradient(145deg, #2a2a3a, #1c1c2a);
+      border-radius: 32px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ddd;
+    }
+
+    .prompt-text {
+      color: var(--text-primary);
+      font-size: 15px;
+      line-height: 1.55;
+      font-weight: 400;
+      margin-bottom: 24px;
+      padding: 0 4px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      border-top: 1px solid var(--glass-border);
+      padding-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .copy-btn, .share-btn, .edit-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.15s;
+      backdrop-filter: blur(8px);
+    }
+    .copy-btn i, .share-btn i, .edit-btn i {
+      background: linear-gradient(135deg, #ff6b6b, #ffb347, #ffee88, #6bff6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .copy-btn:hover, .share-btn:hover, .edit-btn:hover {
+      background: var(--hover-bg);
+      transform: scale(1.02);
+    }
+
+    .fresh-view {
+      display: none;
+      flex: 1;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 56px;
+      border: 1px solid var(--glass-border);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: var(--text-primary);
+      gap: 30px;
+      min-height: 400px;
+    }
+    .fresh-view.active {
+      display: flex;
+    }
+    .fresh-icon {
+      font-size: 90px;
+      background: linear-gradient(135deg, #ff6b6b, #ffb347, #ffee88, #6bff6b, #6bb5ff, #b56bff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .fresh-title {
+      font-size: 38px;
+      font-weight: 280;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.2s;
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-card {
+      background: var(--modal-bg);
+      backdrop-filter: blur(30px);
+      border: 1px solid var(--glass-border);
+      border-radius: 60px;
+      padding: 40px 48px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 30px 50px -20px rgba(0,0,0,0.5);
+      color: var(--text-primary);
+    }
+    .modal-card h3 {
+      font-weight: 400;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    .modal-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 50px;
+      padding: 18px 24px;
+      font-size: 18px;
+      color: var(--text-primary);
+      margin: 20px 0;
+      outline: none;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+    }
+    .modal-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      padding: 14px 30px;
+      border-radius: 40px;
+      font-size: 16px;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+    .modal-btn.primary {
+      background: linear-gradient(135deg, #ffb6b6, #fad0c4);
+      color: #1e1e2a;
+      border: none;
+    }
+    .modal-btn:hover {
+      background: var(--hover-bg);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px; right: 30px;
+      background: var(--modal-bg);
+      backdrop-filter: blur(30px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      padding: 16px 32px;
+      border-radius: 60px;
+      font-weight: 400;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+      z-index: 1100;
+      animation: slideUp 0.3s;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* export json button */
+    .export-json {
+      margin-top: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      padding: 14px;
+      text-align: center;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body class="dark">   <!-- default is dark with black background -->
+  <div class="sensior-app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="far fa-star" style="margin-right: 8px;"></i>SENSIOR</h3>
+        <button class="close-sidebar" id="closeSidebar"><i class="fas fa-chevron-left"></i></button>
+      </div>
+
+      <div class="nav-item" id="homeNav">
+        <i class="fas fa-home"></i> <span>Home</span>
+      </div>
+
+      <div class="upload-section">
+        <div class="action-btn" id="uploadBtn">
+          <i class="fas fa-cloud-upload-alt"></i> <span>Upload prompt</span>
+        </div>
+        <div class="action-btn" id="addPageBtn">
+          <i class="fas fa-layer-plus"></i> <span>Add sidebar page</span>
+        </div>
+      </div>
+
+      <div class="dynamic-list" id="dynamicList"></div>
+
+      <!-- export to json -->
+      <div class="export-json" id="exportJsonBtn">
+        <i class="fas fa-database"></i> Export prompts to JSON
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-panel" id="mainPanel">
+      <div class="top-bar">
+        <div class="logo-box">
+          <img src="sensior-main-logo.png" alt="SENSIOR" class="logo-img" id="logoImg" onerror="this.src='https://placehold.co/200x50/1a1a2a/e0e0ff?text=SENSIOR&font=montserrat';">
+          <span style="color: var(--glass-border); font-size: 36px;">|</span>
+        </div>
+        <div class="right-controls">
+          <div class="dark-toggle" id="darkToggle">
+            <i class="fas fa-sun"></i>   <!-- sun for light mode (since dark is default) -->
+          </div>
+          <div class="toggle-sidebar" id="openSidebar">
+            <i class="fas fa-bars-staggered"></i>
+          </div>
+        </div>
+      </div>
+
+      <div id="promptView" class="prompt-grid"></div>
+
+      <div id="freshView" class="fresh-view">
+        <i class="fas fa-sparkles fresh-icon"></i>
+        <h2 class="fresh-title" id="freshPageName">✧ blank page</h2>
+        <p style="opacity: 0.5;">fresh start · nothing yet</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card">
+      <h3 id="modalTitle">🔐 password</h3>
+      <input type="password" id="modalInput" class="modal-input" placeholder="••••••••">
+      <div class="modal-actions">
+        <button class="modal-btn" id="modalCancel">cancel</button>
+        <button class="modal-btn primary" id="modalConfirm">confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- STATE ----------
+      const PASSWORD = 'Ramesh@19';
+      let prompts = [
+        { id: 'p1', emoji: '📸', text: 'golden hour portrait, cinematic, 85mm, shallow dof, warm tones' },
+        { id: 'p2', emoji: '🎨', text: 'vector landscape, mid-century style, pastel gradients, clean lines' },
+        { id: 'p3', emoji: '🧪', text: 'sci‑fi lab, volumetric fog, blue neon, unreal engine 5' },
+        { id: 'p4', emoji: '🌿', text: 'botanical drawing, charcoal & digital, high detail, vellum texture' },
+        { id: 'p5', emoji: '🏛️', text: 'brutalist architecture, raw concrete, dramatic sky, 8k' },
+        { id: 'p6', emoji: '🪐', text: 'vaporwave aesthetic, neon grid, palm trees, retro sunset' }
+      ];
+
+      let dynamicPages = [];
+
+      // DOM elements
+      const sidebar = document.getElementById('sidebar');
+      const openBtn = document.getElementById('openSidebar');
+      const closeBtn = document.getElementById('closeSidebar');
+      const homeNav = document.getElementById('homeNav');
+      const promptView = document.getElementById('promptView');
+      const freshView = document.getElementById('freshView');
+      const freshPageName = document.getElementById('freshPageName');
+      const dynamicList = document.getElementById('dynamicList');
+      const modalOverlay = document.getElementById('modalOverlay');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalInput = document.getElementById('modalInput');
+      const modalCancel = document.getElementById('modalCancel');
+      const modalConfirm = document.getElementById('modalConfirm');
+      const darkToggle = document.getElementById('darkToggle');
+      const exportBtn = document.getElementById('exportJsonBtn');
+
+      let currentModalCallback = null;
+
+      // ---------- THEME TOGGLE (light/dark) ----------
+      darkToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        document.body.classList.toggle('light');
+        const icon = darkToggle.querySelector('i');
+        if (document.body.classList.contains('dark')) {
+          icon.classList.remove('fa-sun');
+          icon.classList.add('fa-moon');
+        } else {
+          icon.classList.remove('fa-moon');
+          icon.classList.add('fa-sun');
+        }
+      });
+
+      // ---------- SIDEBAR TOGGLE ----------
+      openBtn.addEventListener('click', () => sidebar.classList.remove('collapsed'));
+      closeBtn.addEventListener('click', () => sidebar.classList.add('collapsed'));
+
+      // ---------- RENDER PROMPTS ----------
+      function renderPrompts() {
+        promptView.innerHTML = '';
+        prompts.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'prompt-card';
+          card.dataset.id = p.id;
+
+          const imgDiv = document.createElement('div');
+          imgDiv.className = 'card-img';
+          imgDiv.textContent = p.emoji;
+
+          const textDiv = document.createElement('div');
+          textDiv.className = 'prompt-text';
+          textDiv.textContent = p.text;
+
+          const actions = document.createElement('div');
+          actions.className = 'card-actions';
+
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-btn';
+          copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy';
+          copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(p.text).then(() => showToast('✓ prompt copied'));
+          });
+
+          const shareBtn = document.createElement('button');
+          shareBtn.className = 'share-btn';
+          shareBtn.innerHTML = '<i class="fa-solid fa-share-nodes"></i> Share';
+          shareBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (navigator.share) {
+              navigator.share({
+                title: 'SENSIOR prompt',
+                text: p.text,
+              }).catch(() => {
+                navigator.clipboard.writeText(p.text).then(() => showToast('✓ prompt copied (share fallback)'));
+              });
+            } else {
+              navigator.clipboard.writeText(p.text).then(() => showToast('✓ prompt copied (share not supported)'));
+            }
+          });
+
+          const editBtn = document.createElement('button');
+          editBtn.className = 'edit-btn';
+          editBtn.innerHTML = '<i class="fas fa-pencil"></i> Edit';
+          // ---- EDIT WITH PASSWORD ----
+          editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const promptToEdit = p; // reference to current prompt
+            // Open password modal
+            openModal('🔒 edit password (Ramesh@19)', (pwd) => {
+              if (pwd === PASSWORD) {
+                const newText = prompt('Edit prompt text:', promptToEdit.text);
+                if (newText !== null && newText.trim() !== '') {
+                  promptToEdit.text = newText.trim();
+                  renderPrompts(); // re-render to show updated text
+                  showToast('✎ prompt updated');
+                }
+              } else {
+                showToast('❌ you cannot edit prompts');
+              }
+            }, true);
+          });
+
+          actions.appendChild(copyBtn);
+          actions.appendChild(shareBtn);
+          actions.appendChild(editBtn);
+          card.appendChild(imgDiv);
+          card.appendChild(textDiv);
+          card.appendChild(actions);
+          promptView.appendChild(card);
+        });
+      }
+      renderPrompts();
+
+      // ---------- VIEW SWITCH ----------
+      function showPrompts() {
+        promptView.classList.remove('hidden');
+        freshView.classList.remove('active');
+      }
+      function showFreshPage(name) {
+        freshPageName.textContent = name || '✨ untitled';
+        promptView.classList.add('hidden');
+        freshView.classList.add('active');
+      }
+      homeNav.addEventListener('click', showPrompts);
+
+      // ---------- DYNAMIC PAGES ----------
+      function renderDynamicItems() {
+        dynamicList.innerHTML = '';
+        dynamicPages.forEach(page => {
+          const item = document.createElement('div');
+          item.className = 'dynamic-item';
+          item.dataset.id = page.id;
+          item.innerHTML = `<i class="fa-regular fa-file"></i> ${page.name}`;
+          item.addEventListener('click', () => showFreshPage(page.name));
+          dynamicList.appendChild(item);
+        });
+      }
+
+      // ---------- MODAL ----------
+      function openModal(title, callback, isPassword = true) {
+        modalTitle.textContent = title;
+        modalInput.value = '';
+        modalInput.type = isPassword ? 'password' : 'text';
+        modalInput.placeholder = isPassword ? '••••••••' : 'page name';
+        currentModalCallback = callback;
+        modalOverlay.classList.add('show');
+        modalInput.focus();
+      }
+      function closeModal() {
+        modalOverlay.classList.remove('show');
+        currentModalCallback = null;
+      }
+      modalCancel.addEventListener('click', closeModal);
+      modalConfirm.addEventListener('click', () => {
+        if (currentModalCallback) {
+          currentModalCallback(modalInput.value);
+        }
+        closeModal();
+      });
+      modalInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') modalConfirm.click();
+      });
+
+      // ---------- UPLOAD ----------
+      document.getElementById('uploadBtn').addEventListener('click', () => {
+        openModal('🔒 upload password', (pwd) => {
+          if (pwd === PASSWORD) {
+            showToast('✓ password correct · redirecting');
+            setTimeout(() => window.location.href = 'upload.html', 400);
+          } else alert('incorrect password');
+        }, true);
+      });
+
+      // ---------- ADD PAGE ----------
+      document.getElementById('addPageBtn').addEventListener('click', () => {
+        openModal('🔒 password first', (pwd) => {
+          if (pwd === PASSWORD) {
+            openModal('✨ name of new page', (name) => {
+              if (name && name.trim()) {
+                dynamicPages.push({ id: 'page_'+Date.now(), name: name.trim() });
+                renderDynamicItems();
+                showToast(`➕ "${name}" added`);
+                sidebar.classList.remove('collapsed');
+                showFreshPage(name);
+              } else alert('name cannot be empty');
+            }, false);
+          } else alert('wrong password');
+        }, true);
+      });
+
+      // ---------- EXPORT JSON ----------
+      exportBtn.addEventListener('click', () => {
+        const data = {
+          prompts: prompts,
+          dynamicPages: dynamicPages,
+          exportedAt: new Date().toISOString()
+        };
+        const jsonStr = JSON.stringify(data, null, 2);
+        navigator.clipboard.writeText(jsonStr).then(() => {
+          showToast('📋 JSON copied to clipboard');
+        });
+        console.log('JSON export:', jsonStr);
+      });
+
+      // ---------- TOAST ----------
+      function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      }
+
+      // ---------- FALLBACK LOGO (but we keep original) ----------
+      document.getElementById('logoImg').addEventListener('error', function(e) {
+        e.target.src = 'https://placehold.co/200x50/1a1a2a/e0e0ff?text=SENSIOR&font=montserrat';
+      });
+
+      // initial render dynamic pages (empty)
+      renderDynamicItems();
+    })();
+  </script>
+</body>
+</html>
